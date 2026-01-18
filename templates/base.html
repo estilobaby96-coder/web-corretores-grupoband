@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ app_name }}{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS Principal -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if current_user.is_authenticated %}
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <i class="fas fa-building"></i>
+            <span class="brand-text">{{ company_name }}</span>
+        </div>
+        
+        <div class="navbar-menu" id="navbarMenu">
+            <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{{ url_for('disponibilidade') }}" class="nav-link {% if request.endpoint == 'disponibilidade' %}active{% endif %}">
+                <i class="fas fa-map-marked-alt"></i>
+                <span>Disponibilidade</span>
+            </a>
+            <a href="{{ url_for('mapa') }}" class="nav-link {% if request.endpoint == 'mapa' %}active{% endif %}">
+                <i class="fas fa-th"></i>
+                <span>Mapa Visual</span>
+            </a>
+        </div>
+        
+        <div class="navbar-user">
+            <div class="user-info">
+                <i class="fas fa-user-circle"></i>
+                <span class="user-name">{{ current_user.nome }}</span>
+            </div>
+            <a href="{{ url_for('logout') }}" class="btn-logout" title="Sair">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
+        </div>
+        
+        <button class="navbar-toggle" id="navbarToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+    </nav>
+    {% endif %}
+    
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">
+                <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'error' %}fa-exclamation-circle{% elif category == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %}"></i>
+                <span>{{ message }}</span>
+                <button class="flash-close" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+    
+    <!-- Conteúdo Principal -->
+    <main class="main-content {% if not current_user.is_authenticated %}no-navbar{% endif %}">
+        {% block content %}{% endblock %}
+    </main>
+    
+    {% if current_user.is_authenticated %}
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <span class="footer-brand">
+                <i class="fas fa-building"></i>
+                {{ app_name }} v{{ app_version }}
+            </span>
+            <span class="footer-separator">|</span>
+            <span class="footer-dev">
+                <i class="fas fa-code"></i>
+                Desenvolvido por Julio Luiz Marques!
+            </span>
+        </div>
+    </footer>
+    {% endif %}
+    
+    <!-- JavaScript Principal -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

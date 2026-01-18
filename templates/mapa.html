@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+
+{% block title %}Mapa Visual - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="mapa-container">
+    <!-- Cabeçalho -->
+    <div class="page-header">
+        <div class="header-content">
+            <h1 class="page-title">
+                <i class="fas fa-th"></i>
+                Mapa Visual
+            </h1>
+            <p class="page-subtitle">Visualização gráfica dos lotes por quadra</p>
+        </div>
+    </div>
+    
+    <!-- Seletores -->
+    <div class="mapa-selectors">
+        <div class="selector-group">
+            <label for="selectLoteamento">
+                <i class="fas fa-map-marker-alt"></i>
+                Loteamento
+            </label>
+            <select id="selectLoteamento" class="form-control" onchange="selecionarLoteamento(this.value)">
+                <option value="">Selecione um Loteamento</option>
+                {% for lot in loteamentos %}
+                <option value="{{ lot.id }}" {% if loteamento_selecionado and loteamento_selecionado.id == lot.id %}selected{% endif %}>
+                    {{ lot.nome }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="selector-group">
+            <label for="selectQuadra">
+                <i class="fas fa-th-large"></i>
+                Quadra
+            </label>
+            <select id="selectQuadra" class="form-control" onchange="selecionarQuadra(this.value)" {% if not quadras %}disabled{% endif %}>
+                <option value="">Selecione uma Quadra</option>
+                {% for quadra in quadras %}
+                <option value="{{ quadra.id }}" {% if quadra_selecionada and quadra_selecionada.id == quadra.id %}selected{% endif %}>
+                    Quadra {{ '%02d'|format(quadra.numero_quadra) }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    
+    <!-- Legenda -->
+    <div class="mapa-legenda">
+        <div class="legenda-item">
+            <span class="legenda-cor disponivel"></span>
+            <span class="legenda-texto">Disponível</span>
+        </div>
+        <div class="legenda-item">
+            <span class="legenda-cor vendido"></span>
+            <span class="legenda-texto">Vendido</span>
+        </div>
+        <div class="legenda-item">
+            <span class="legenda-cor reservado"></span>
+            <span class="legenda-texto">Reservado</span>
+        </div>
+    </div>
+    
+    <!-- Mapa Visual -->
+    <div class="mapa-visual-container">
+        {% if lotes %}
+        <div class="mapa-info">
+            <h3>
+                <i class="fas fa-map-marker-alt"></i>
+                {{ loteamento_selecionado.nome if loteamento_selecionado else '' }}
+                {% if quadra_selecionada %}
+                - Quadra {{ '%02d'|format(quadra_selecionada.numero_quadra) }}
+                {% endif %}
+            </h3>
+            <div class="mapa-stats">
+                <span class="stat-item">
+                    <i class="fas fa-th"></i>
+                    <strong id="totalLotes">{{ lotes|length }}</strong> lotes
+                </span>
+                <span class="stat-item text-success">
+                    <i class="fas fa-check-circle"></i>
+                    <strong id="lotesDisponiveis">0</strong> disponíveis
+                </span>
+                <span class="stat-item text-danger">
+                    <i class="fas fa-times-circle"></i>
+                    <strong id="lotesVendidos">0</strong> vendidos
+                </span>
+            </div>
+        </div>
+        
+        <div class="mapa-grid" id="mapaGrid">
+            {% for lote in lotes %}
+            <div class="lote-cell {{ lote.status }}" 
+                 data-lote="{{ lote.numero_lote }}"
+                 data-metragem="{{ lote.metragem }}"
+                 data-status="{{ lote.status }}"
+                 onclick="mostrarDetalhes(this)">
+                <span class="lote-numero">{{ '%02d'|format(lote.numero_lote) }}</span>
+                <span class="lote-metragem">{{ '%.0f'|format(lote.metragem) }}m²</span>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% else %}
+        <div class="mapa-empty">
+            <div class="empty-icon">
+                <i class="fas fa-map"></i>
+            </div>
+            <h3>Selecione um Loteamento e uma Quadra</h3>
+            <p>Escolha um loteamento e uma quadra para visualizar o mapa dos lotes</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Modal de Detalhes -->
+    <div class="modal-overlay" id="modalOverlay" onclick="fecharModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="fecharModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <h3 id="modalTitle">Detalhes do Lote</h3>
+            </div>
+            <div class="modal-body">
+                <div class="detail-item">
+                    <span class="detail-label">Loteamento:</span>
+                    <span class="detail-value" id="modalLoteamento">-</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Quadra:</span>
+                    <span class="detail-value" id="modalQuadra">-</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Lote:</span>
+                    <span class="detail-value" id="modalLote">-</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Metragem:</span>
+                    <span class="detail-value" id="modalMetragem">-</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Status:</span>
+                    <span class="detail-value" id="modalStatus">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Dados dos lotes
+const lotesData = {{ lotes|tojson|safe if lotes else '[]' }};
+const loteamentoNome = '{{ loteamento_selecionado.nome if loteamento_selecionado else "" }}';
+const quadraNumero = '{{ "%02d"|format(quadra_selecionada.numero_quadra) if quadra_selecionada else "" }}';
+
+// Atualizar estatísticas
+document.addEventListener('DOMContentLoaded', function() {
+    if (lotesData.length > 0) {
+        let disponiveis = 0;
+        let vendidos = 0;
+        
+        lotesData.forEach(lote => {
+            if (lote.status === 'disponivel') disponiveis++;
+            else if (lote.status === 'vendido') vendidos++;
+        });
+        
+        document.getElementById('lotesDisponiveis').textContent = disponiveis;
+        document.getElementById('lotesVendidos').textContent = vendidos;
+    }
+});
+
+// Selecionar loteamento
+function selecionarLoteamento(loteamentoId) {
+    if (loteamentoId) {
+        window.location.href = `/mapa?loteamento_id=${loteamentoId}`;
+    } else {
+        window.location.href = '/mapa';
+    }
+}
+
+// Selecionar quadra
+function selecionarQuadra(quadraId) {
+    const loteamentoId = document.getElementById('selectLoteamento').value;
+    if (loteamentoId && quadraId) {
+        window.location.href = `/mapa?loteamento_id=${loteamentoId}&quadra_id=${quadraId}`;
+    }
+}
+
+// Mostrar detalhes do lote
+function mostrarDetalhes(element) {
+    const loteNumero = element.dataset.lote;
+    const metragem = element.dataset.metragem;
+    const status = element.dataset.status;
+    
+    document.getElementById('modalLoteamento').textContent = loteamentoNome;
+    document.getElementById('modalQuadra').textContent = `Quadra ${quadraNumero}`;
+    document.getElementById('modalLote').textContent = `Lote ${String(loteNumero).padStart(2, '0')}`;
+    document.getElementById('modalMetragem').textContent = `${parseFloat(metragem).toLocaleString('pt-BR', {minimumFractionDigits: 2})} m²`;
+    
+    const statusElement = document.getElementById('modalStatus');
+    statusElement.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+    statusElement.className = `detail-value status-text-${status}`;
+    
+    document.getElementById('modalOverlay').classList.add('active');
+}
+
+// Fechar modal
+function fecharModal() {
+    document.getElementById('modalOverlay').classList.remove('active');
+}
+
+// Fechar modal com ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        fecharModal();
+    }
+});
+</script>
+{% endblock %}

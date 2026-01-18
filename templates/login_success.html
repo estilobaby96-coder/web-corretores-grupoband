@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrando... - {{ app_name }}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000000;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .animation-container {
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .logo-container {
+            margin-bottom: 40px;
+        }
+        
+        .logo-container img {
+            width: 200px;
+            height: auto;
+            animation: pulse 2s infinite;
+        }
+        
+        .logo-container i {
+            font-size: 100px;
+            color: #d4af37;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+        
+        .gold-line {
+            width: 350px;
+            height: 2px;
+            background: #d4af37;
+            margin: 0 auto 30px;
+        }
+        
+        .welcome-text {
+            color: #ffffff;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .user-name {
+            color: #d4af37;
+        }
+        
+        .loading-text {
+            color: #b8b8b8;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+        
+        .gold-line-bottom {
+            width: 350px;
+            height: 2px;
+            background: #d4af37;
+            margin: 0 auto 35px;
+        }
+        
+        .progress-container {
+            width: 350px;
+            height: 4px;
+            background: #1a1a1a;
+            border-radius: 2px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: #d4af37;
+            width: 0%;
+            animation: loadProgress 2s ease-out forwards;
+        }
+        
+        @keyframes loadProgress {
+            0% {
+                width: 0%;
+            }
+            100% {
+                width: 100%;
+            }
+        }
+        
+        .version {
+            color: #4a4a4a;
+            font-size: 12px;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="animation-container">
+        <div class="logo-container">
+            <i class="fas fa-building"></i>
+        </div>
+        
+        <div class="gold-line"></div>
+        
+        <h1 class="welcome-text">
+            Bem-vindo(a), <span class="user-name">{{ user_name }}</span>!
+        </h1>
+        
+        <p class="loading-text">Entrando no sistema...</p>
+        
+        <div class="gold-line-bottom"></div>
+        
+        <div class="progress-container">
+            <div class="progress-bar"></div>
+        </div>
+        
+        <p class="version">{{ app_name }} v{{ app_version }}</p>
+    </div>
+    
+    <script>
+        // Redirecionar após a animação
+        setTimeout(function() {
+            window.location.href = '{{ redirect_url }}';
+        }, 2500);
+    </script>
+</body>
+</html>

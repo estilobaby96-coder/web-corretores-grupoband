@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Cabeçalho -->
+    <div class="page-header">
+        <div class="header-content">
+            <h1 class="page-title">
+                <i class="fas fa-tachometer-alt"></i>
+                Dashboard
+            </h1>
+            <p class="page-subtitle">Visão geral da disponibilidade de lotes</p>
+        </div>
+        <div class="header-actions">
+            <span class="current-date">
+                <i class="fas fa-calendar-alt"></i>
+                <span id="currentDate"></span>
+            </span>
+        </div>
+    </div>
+    
+    <!-- Cards de Estatísticas -->
+    <div class="stats-grid">
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">
+                <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-value">{{ stats.total_loteamentos }}</span>
+                <span class="stat-label">Loteamentos</span>
+            </div>
+        </div>
+        
+        <div class="stat-card stat-info">
+            <div class="stat-icon">
+                <i class="fas fa-th-large"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-value">{{ stats.total_quadras }}</span>
+                <span class="stat-label">Quadras</span>
+            </div>
+        </div>
+        
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-value">{{ stats.lotes_disponiveis|format_number }}</span>
+                <span class="stat-label">Lotes Disponíveis</span>
+            </div>
+        </div>
+        
+        <div class="stat-card stat-warning">
+            <div class="stat-icon">
+                <i class="fas fa-ruler-combined"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-value">{{ stats.metragem_disponivel|format_area }}</span>
+                <span class="stat-label">Metragem Disponível</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Gráfico de Resumo -->
+    <div class="dashboard-row">
+        <div class="card card-chart">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-chart-pie"></i>
+                    Resumo de Lotes
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <div class="donut-chart">
+                        <svg viewBox="0 0 36 36" class="circular-chart">
+                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            <path class="circle-progress success" stroke-dasharray="{{ stats.percentual_disponivel }}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                        </svg>
+                        <div class="chart-center">
+                            <span class="chart-value">{{ stats.percentual_disponivel }}%</span>
+                            <span class="chart-label">Disponível</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <span class="legend-color success"></span>
+                        <span class="legend-label">Disponíveis</span>
+                        <span class="legend-value">{{ stats.lotes_disponiveis }}</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color danger"></span>
+                        <span class="legend-label">Vendidos</span>
+                        <span class="legend-value">{{ stats.lotes_vendidos }}</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color warning"></span>
+                        <span class="legend-label">Reservados</span>
+                        <span class="legend-value">{{ stats.lotes_reservados }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Lista de Loteamentos -->
+        <div class="card card-loteamentos">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-map-marked-alt"></i>
+                    Loteamentos
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="loteamentos-list">
+                    {% for loteamento in loteamentos %}
+                    <a href="{{ url_for('disponibilidade', loteamento_id=loteamento.id) }}" class="loteamento-item">
+                        <div class="loteamento-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="loteamento-info">
+                            <span class="loteamento-nome">{{ loteamento.nome }}</span>
+                            <span class="loteamento-local">{{ loteamento.cidade or 'N/A' }} - {{ loteamento.estado or 'N/A' }}</span>
+                        </div>
+                        <div class="loteamento-arrow">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </a>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-map-marked-alt"></i>
+                        <p>Nenhum loteamento cadastrado</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Acesso Rápido -->
+    <div class="quick-access">
+        <h3 class="section-title">
+            <i class="fas fa-bolt"></i>
+            Acesso Rápido
+        </h3>
+        <div class="quick-access-grid">
+            <a href="{{ url_for('disponibilidade') }}" class="quick-card">
+                <div class="quick-icon bg-success">
+                    <i class="fas fa-list-alt"></i>
+                </div>
+                <span class="quick-label">Ver Disponibilidade</span>
+            </a>
+            <a href="{{ url_for('mapa') }}" class="quick-card">
+                <div class="quick-icon bg-info">
+                    <i class="fas fa-th"></i>
+                </div>
+                <span class="quick-label">Mapa Visual</span>
+            </a>
+            {% for loteamento in loteamentos[:3] %}
+            <a href="{{ url_for('mapa', loteamento_id=loteamento.id) }}" class="quick-card">
+                <div class="quick-icon bg-primary">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <span class="quick-label">{{ loteamento.nome[:20] }}{% if loteamento.nome|length > 20 %}...{% endif %}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Atualizar data atual
+document.getElementById('currentDate').textContent = new Date().toLocaleDateString('pt-BR', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+});
+</script>
+{% endblock %}

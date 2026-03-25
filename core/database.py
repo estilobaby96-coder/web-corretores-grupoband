@@ -7,25 +7,28 @@ load_dotenv()
 
 NEON_URL = os.getenv("NEON_URL", "")
 
-
 def get_connection():
-      return psycopg2.connect(NEON_URL, cursor_factory=psycopg2.extras.RealDictCursor)
-
+          return psycopg2.connect(NEON_URL, cursor_factory=psycopg2.extras.RealDictCursor)
 
 class DatabaseSession:
-      def __init__(self):
-                self.conn = None
-                self.cur = None
-            def __enter__(self):
-                      self.conn = get_connection()
-                      self.cur = self.conn.cursor()
-                      return self.cur
+          def __init__(self):
+                        self.conn = None
+                        self.cur = None
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-              if exc_type:
-                            self.conn.rollback()
-              else:
-                            self.conn.commit()
-                        self.cur.close()
-        self.conn.close()
-        
+          def __enter__(self):
+                        self.conn = get_connection()
+                        self.cur = self.conn.cursor()
+                        return self
+
+          def __exit__(self, exc_type, exc_val, exc_tb):
+                        if exc_type:
+                                          if self.conn:
+                                                                self.conn.rollback()
+                        else:
+                                          if self.conn:
+                                                                self.conn.commit()
+                                                        if self.cur:
+                                                                          self.cur.close()
+                                                                      if self.conn:
+                                                                                        self.conn.close()
+                                                                            

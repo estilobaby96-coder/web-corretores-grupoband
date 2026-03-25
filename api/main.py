@@ -18,7 +18,7 @@ for p in CANDIDATES:
                     sys.path.insert(0, str(p))
                     break
 
-    from core.database import DatabaseSession
+from core.database import DatabaseSession
 from api.routers import auth, vendas, financeiro, agenda, assinatura
 
 app = FastAPI(title="Grupo Band - API", version="4.0.0")

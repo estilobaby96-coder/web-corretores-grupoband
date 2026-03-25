@@ -1,10 +1,8 @@
-# Portal Web Corretores - GrupoBand
-# Dependências do projeto
-
-Flask==3.0.0
-Flask-Login==0.6.3
-Flask-SQLAlchemy==3.1.1
-psycopg2-binary==2.9.9
-Werkzeug==3.0.1
-python-dotenv==1.0.0
-gunicorn==21.2.0
+fastapi==0.123.0
+uvicorn==0.38.0
+psycopg2-binary==2.9.11
+pydantic==2.12.5
+python-dotenv==1.2.1
+reportlab==4.4.10
+requests==2.32.5
+aiofiles==23.2.1
